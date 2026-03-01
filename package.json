@@ -1,0 +1,11 @@
+{
+  "name": "multiskills",
+  "version": "1.0.0",
+  "description": "MultiSkills monorepo — frontend + backend",
+  "private": true,
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend":  "cd backend && npm run dev",
+    "install:all": "cd frontend && npm install && cd ../backend && npm install"
+  }
+}
