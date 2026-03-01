@@ -45,7 +45,7 @@ export function CategoryPage({ category, onBack, onSelectSkill }) {
           <div>
             {skills.map(skill => (
               <div
-                key={skill.id}
+                key={skill._id}
                 onClick={() => onSelectSkill(skill)}
                 style={{
                   padding: '16px 0 16px 20px',
@@ -68,7 +68,7 @@ export function CategoryPage({ category, onBack, onSelectSkill }) {
                   e.currentTarget.style.paddingLeft = '20px';
                 }}
               >
-                <span style={{ fontSize: 17, color: 'var(--text)' }}>{skill.skill_name}</span>
+                <span style={{ fontSize: 17, color: 'var(--text)' }}>{skill.skillName}</span>
                 <span style={{ color: 'var(--text-dim)', fontSize: 18 }}>›</span>
               </div>
             ))}
@@ -80,16 +80,14 @@ export function CategoryPage({ category, onBack, onSelectSkill }) {
 }
 
 
-// src/pages/SkillDetailPage.jsx
-
-const CATS_D = {
-  Money:     { icon: '◈', color: 'var(--money)',     border: 'var(--money-border)' },
-  Soul:      { icon: '◎', color: 'var(--soul)',      border: 'var(--soul-border)' },
-  Curiosity: { icon: '◇', color: 'var(--curiosity)', border: 'var(--curiosity-border)' },
-};
-
 export function SkillDetailPage({ skill, onBack, onDelete }) {
-  const c = CATS_D[skill.final_category] || CATS_D.Curiosity;
+  const CATS_D = {
+    Money:     { icon: '◈', color: 'var(--money)',     border: 'var(--money-border)' },
+    Soul:      { icon: '◎', color: 'var(--soul)',      border: 'var(--soul-border)' },
+    Curiosity: { icon: '◇', color: 'var(--curiosity)', border: 'var(--curiosity-border)' },
+  };
+
+  const c = CATS_D[skill.finalCategory] || CATS_D.Curiosity;
 
   return (
     <div className="page">
@@ -113,38 +111,38 @@ export function SkillDetailPage({ skill, onBack, onDelete }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <span style={{ color: c.color, fontSize: 14 }}>{c.icon}</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.18em', color: c.color, textTransform: 'uppercase' }}>
-              {skill.final_category}
+              {skill.finalCategory}
             </span>
-            {skill.ai_suggested_category !== skill.final_category && (
+            {skill.aiSuggestedCategory !== skill.finalCategory && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
-                (AI suggested: {skill.ai_suggested_category})
+                (AI suggested: {skill.aiSuggestedCategory})
               </span>
             )}
           </div>
 
           <h2 style={{ fontSize: 36, fontWeight: 400, color: 'var(--text)', marginBottom: 24, letterSpacing: '-0.01em' }}>
-            {skill.skill_name}
+            {skill.skillName}
           </h2>
 
-          {skill.ai_reason && (
+          {skill.aiReason && (
             <p style={{
               fontSize: 15, color: 'var(--text-mid)',
               fontStyle: 'italic', lineHeight: 1.8,
               marginBottom: 28,
             }}>
-              "{skill.ai_reason}"
+              "{skill.aiReason}"
             </p>
           )}
 
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
-            {new Date(skill.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            {new Date(skill.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
 
         <div style={{ marginTop: 48 }}>
           <button
             className="btn btn-danger"
-            onClick={() => onDelete(skill.id)}
+            onClick={() => onDelete(skill._id)}
           >
             Delete Skill
           </button>
