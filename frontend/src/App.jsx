@@ -8,8 +8,7 @@ import Navbar      from './components/Navbar';
 import WelcomePage from './pages/WelcomePage';
 import AuthPage    from './pages/AuthPage';
 import HomePage    from './pages/HomePage';
-import { CategoryPage }    from './pages/CategoryPage';
-import { SkillDetailPage } from './pages/CategoryPage';
+import { CategoryPage, SkillDetailPage } from './pages/CategoryPage';
 
 export default function App() {
   const { isAuthenticated, loading } = useAuth();
@@ -18,30 +17,38 @@ export default function App() {
   const [screen,   setScreen]   = useState('welcome');
   const [category, setCategory] = useState(null);
   const [skill,    setSkill]    = useState(null);
-  // Track whether the user was previously authenticated this session.
-  // This lets us distinguish "just signed out" from "fresh page load".
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check for password reset link: /reset-password?token=xxx
+    const params   = new URLSearchParams(window.location.search);
+    const token    = params.get('token');
+    const pathname = window.location.pathname;
+
+    if (pathname === '/reset-password' && token) {
+      // Rewrite URL to pass token to AuthPage via query param it expects
+      window.history.replaceState({}, '', `/?token=${token}&page=reset`);
+      setScreen('auth');
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     if (loading) return;
 
     if (isAuthenticated) {
-      // Logged in — go to home from welcome or auth screens
       setWasAuthenticated(true);
       if (screen === 'auth' || screen === 'welcome') {
         setScreen('home');
       }
     } else if (wasAuthenticated) {
-      // Was logged in this session, now signed out → go to auth
       setScreen('auth');
       setWasAuthenticated(false);
     }
-    // If never authenticated (fresh visit), do nothing — stay on 'welcome'
   }, [isAuthenticated, loading]);
 
   if (loading) return <LoadingScreen />;
 
-  // ── Route: Welcome ────────────────────────
   if (screen === 'welcome') {
     return (
       <WelcomePage
@@ -50,12 +57,8 @@ export default function App() {
     );
   }
 
-  // ── Route: Auth ───────────────────────────
-  if (!isAuthenticated) {
-    return <AuthPage />;
-  }
+  if (!isAuthenticated) return <AuthPage />;
 
-  // ── Route: Category ───────────────────────
   if (screen === 'category' && category) {
     return (
       <>
@@ -71,7 +74,6 @@ export default function App() {
     );
   }
 
-  // ── Route: Skill Detail ───────────────────
   if (screen === 'detail' && skill) {
     return (
       <>
@@ -91,7 +93,6 @@ export default function App() {
     );
   }
 
-  // ── Route: Home ───────────────────────────
   return (
     <>
       <Navbar />

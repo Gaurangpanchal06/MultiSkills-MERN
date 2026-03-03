@@ -8,7 +8,7 @@ const SkillSchema = new mongoose.Schema(
       type:     mongoose.Schema.Types.ObjectId,
       ref:      'User',
       required: true,
-      index:    true, // Fast lookup by user
+      index:    true,
     },
     skillName: {
       type:     String,
@@ -27,6 +27,14 @@ const SkillSchema = new mongoose.Schema(
     aiReason: {
       type:    String,
       default: '',
+    },
+    // ── User notes ────────────────────────────
+    // User can write personal notes about this skill
+    notes: {
+      type:    String,
+      default: '',
+      trim:    true,
+      maxlength: 1000,
     },
   },
   {

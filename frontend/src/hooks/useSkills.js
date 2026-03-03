@@ -1,5 +1,4 @@
 // src/hooks/useSkills.js
-// Skill CRUD using the Express REST API
 
 import { useState, useEffect, useCallback } from 'react';
 import { skillsAPI } from '../lib/api';
@@ -10,7 +9,6 @@ export function useSkills() {
   const [skills,  setSkills]  = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ── Fetch all skills for user ─────────────
   const fetchSkills = useCallback(async () => {
     if (!user) { setSkills([]); return; }
     setLoading(true);
@@ -26,15 +24,9 @@ export function useSkills() {
 
   useEffect(() => { fetchSkills(); }, [fetchSkills]);
 
-  // ── Add skill ─────────────────────────────
   async function addSkill({ skillName, aiSuggestedCategory, finalCategory, aiReason }) {
     try {
-      const { skill } = await skillsAPI.add({
-        skillName,
-        aiSuggestedCategory,
-        finalCategory,
-        aiReason,
-      });
+      const { skill } = await skillsAPI.add({ skillName, aiSuggestedCategory, finalCategory, aiReason });
       setSkills(prev => [skill, ...prev]);
       return skill;
     } catch (err) {
@@ -43,7 +35,17 @@ export function useSkills() {
     }
   }
 
-  // ── Delete skill ──────────────────────────
+  async function updateNotes(id, notes) {
+    try {
+      const { skill } = await skillsAPI.updateNotes(id, notes);
+      setSkills(prev => prev.map(s => s._id === id ? skill : s));
+      return skill;
+    } catch (err) {
+      console.error('[useSkills] updateNotes error:', err.message);
+      return null;
+    }
+  }
+
   async function deleteSkill(id) {
     try {
       await skillsAPI.delete(id);
@@ -53,10 +55,9 @@ export function useSkills() {
     }
   }
 
-  // ── Filter by category ────────────────────
   function byCategory(cat) {
     return skills.filter(s => s.finalCategory === cat);
   }
 
-  return { skills, loading, addSkill, deleteSkill, byCategory, refetch: fetchSkills };
+  return { skills, loading, addSkill, updateNotes, deleteSkill, byCategory, refetch: fetchSkills };
 }

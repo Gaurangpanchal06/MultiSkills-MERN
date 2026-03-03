@@ -18,25 +18,33 @@ const UserSchema = new mongoose.Schema(
       trim:      true,
     },
     password: {
-      type:     String,
-      // Not required — Google OAuth users have no password
-      select:   false, // Never return password in queries by default
+      type:   String,
+      select: false, // Never return password in queries by default
     },
     googleId: {
       type:   String,
-      sparse: true, // Allows multiple null values (non-Google users)
+      sparse: true,
     },
     avatarUrl: {
       type:    String,
       default: '',
     },
+    // ── Password reset fields ─────────────────
+    resetPasswordToken: {
+      type:   String,
+      select: false,
+    },
+    resetPasswordExpires: {
+      type:   Date,
+      select: false,
+    },
   },
   {
-    timestamps: true, // adds createdAt and updatedAt automatically
+    timestamps: true,
   }
 );
 
-// Hash password before saving — only if password was modified
+// Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) return next();
   const salt    = await bcrypt.genSalt(10);
@@ -44,7 +52,6 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-// Instance method to compare passwords at login
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
