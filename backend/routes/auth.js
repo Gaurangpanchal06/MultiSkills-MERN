@@ -1,12 +1,12 @@
 // routes/auth.js
 
-const express    = require('express');
-const jwt        = require('jsonwebtoken');
-const crypto     = require('crypto');
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const passport   = require('passport');
-const User       = require('../models/User');
-const protect    = require('../middleware/auth');
+const passport = require('passport');
+const User = require('../models/User');
+const protect = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -25,9 +25,9 @@ function sendToken(res, user, statusCode = 200) {
   res.status(statusCode).json({
     token,
     user: {
-      id:        user._id,
-      fullName:  user.fullName,
-      email:     user.email,
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
       avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
     },
@@ -37,10 +37,15 @@ function sendToken(res, user, statusCode = 200) {
 // ── Helper: send email ────────────────────
 async function sendEmail({ to, subject, html }) {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // Gmail App Password
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 
@@ -71,7 +76,7 @@ router.post('/signup', async (req, res) => {
 
     const user = await User.create({
       fullName: fullName || '',
-      email:    email.toLowerCase(),
+      email: email.toLowerCase(),
       password,
     });
 
@@ -136,7 +141,7 @@ router.post('/forgot-password', async (req, res) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
     // Save hashed version to DB (never store raw tokens)
-    user.resetPasswordToken   = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save({ validateBeforeSave: false });
 
@@ -145,7 +150,7 @@ router.post('/forgot-password', async (req, res) => {
 
     try {
       await sendEmail({
-        to:      user.email,
+        to: user.email,
         subject: 'MultiSkills — Reset your password',
         html: `
           <div style="font-family: monospace; max-width: 480px; margin: 0 auto; padding: 40px; background: #0E0E0F; color: #E8E4DC;">
@@ -171,7 +176,7 @@ router.post('/forgot-password', async (req, res) => {
       res.json({ message: 'If that email exists, a reset link has been sent.' });
     } catch (emailErr) {
       // If email fails, clear the token so user can try again
-      user.resetPasswordToken   = undefined;
+      user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       await user.save({ validateBeforeSave: false });
       console.error('[forgot-password] Email error:', emailErr.message);
@@ -200,7 +205,7 @@ router.post('/reset-password', async (req, res) => {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await User.findOne({
-      resetPasswordToken:   hashedToken,
+      resetPasswordToken: hashedToken,
       resetPasswordExpires: { $gt: Date.now() }, // not expired
     }).select('+resetPasswordToken +resetPasswordExpires');
 
@@ -209,8 +214,8 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Set new password — pre-save hook will hash it
-    user.password             = password;
-    user.resetPasswordToken   = undefined;
+    user.password = password;
+    user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 
@@ -242,9 +247,9 @@ router.get('/google/callback',
 router.get('/me', protect, (req, res) => {
   res.json({
     user: {
-      id:        req.user._id,
-      fullName:  req.user.fullName,
-      email:     req.user.email,
+      id: req.user._id,
+      fullName: req.user.fullName,
+      email: req.user.email,
       avatarUrl: req.user.avatarUrl,
       createdAt: req.user.createdAt,
     },
